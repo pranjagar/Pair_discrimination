@@ -261,10 +261,14 @@ def generate_collapses(params, N=1000, N_expt=2500):
     nju_big_list = [measure_once(params, N) for _ in range(N_expt)]
     return nju_big_list
 
-def ppm_errors(tru, nju, method = 'CG'):
+def ppm_errors(tru, nju, method = 'CG', ig = 'inv'):
     inv = Inversion_new(params = tru, N =int(sum(nju)), threshold = 'variable', nju = nju)
     inv_params = inv[2]
-    sol = minimize(L, inv_params , method = method , args=(nju))
+
+    if ig == 'inv':
+        sol = minimize(L, inv_params , method = method , args=(nju))
+    else:
+        sol = minimize(L, np.random.rand(5), method = method, args=(nju))
     sol_params = sol.x
 
     inv_params_deg = [i*180/m.pi for i in inv_params]
