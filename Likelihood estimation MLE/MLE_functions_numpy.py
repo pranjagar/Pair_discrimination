@@ -121,9 +121,25 @@ def fid(params1 = [0,m.pi/2,0,0,m.pi/4], params2 = [0,m.pi/2,0,0,m.pi/4], coeff_
         states2 = Creating_states(params2)[0]
 
         # Calculate the fidelities between the corresponding states
-        fid0 = np.abs(np.dot(states1[0].conj(), states2[0]))**2
-        fid1 = np.abs(np.dot(states1[1].conj(), states2[1]))**2
-    return [fid0, fid1]
+        # fid0 = np.abs(np.dot(states1[0].conj(), states2[0]))**2
+        # fid1 = np.abs(np.dot(states1[1].conj(), states2[1]))**2
+        
+        # implementing selection of the bigger fidelity
+        fid0 = np.abs(np.vdot(states1[0], states2[0]))**2
+        fid1 = np.abs(np.vdot(states1[1], states2[1]))**2
+        Fid_regular = [fid0, fid1]          #"unflipped" fidelities
+
+        fid0_flip = np.abs(np.vdot(states1[0], states2[1]))**2
+        fid1_flip = np.abs(np.vdot(states1[1], states2[0]))**2
+        Fid_flip = [fid0_flip, fid1_flip]       #"flipped" fidelities
+
+        if sum(Fid_flip) > sum(Fid_regular):
+            Fid = [i for i in Fid_flip]  
+        else:
+            Fid = [i for i in Fid_regular]    # deep copy of the bigger fidelity pair
+    x = 5 # dummy for breakpoint
+    # return [fid0, fid1]
+    return Fid
 
 def Inversion_new( N = 10000, params = [0,m.pi/2, m.pi/4], threshold = 'variable', seed = False, an_pr = True, nju = False):    # coeffs are as list [theta_1, theta_2, alpha] in radians
     # seed = 42
