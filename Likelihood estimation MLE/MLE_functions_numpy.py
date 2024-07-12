@@ -294,3 +294,55 @@ def ppm_errors(tru, nju, method = 'CG', ig = 'inv'):
     
     x= 7#dummy for breakpoint
     return [ppm_errors_inv, ppm_errors_opt]
+
+
+# functions for plotting
+
+# Defining two functions specifically for the plotting
+def ppm_errors_data(tru, nju_list, ig = 'inv'):  # uses pre-defined function 'ppm errors' on the list of collapse data, creates list of corresponding ppm errors
+    ppm_errors_list = [ppm_errors(tru, nju, ig = ig) for nju in nju_list]
+    ppm_sums_list = [[sum(i[j]) for j in range(2)] for i in ppm_errors_list]
+    ppm_errors_inversion = [i[0] for i in ppm_sums_list]
+    ppm_errors_optimization = [i[1] for i in ppm_sums_list]
+    return [ppm_errors_inversion, ppm_errors_optimization]
+
+
+def plot_ppm_errors(error_sum_lists, bins =25, xlim = (None, None), ylim = (None, None)):  # creates histogram and box plot of inversion and optimization ppm errors
+    inv = error_sum_lists[0]    # list of ppm errors for inversion and optimization methods
+    opt = error_sum_lists[1]    
+    
+    # histogram
+    plt.hist([inv, opt], bins=bins, histtype='bar', stacked=False, label=['Inversion', 'Optimization'])
+    plt.xlabel('Sum of PPM Errors')
+    plt.ylabel('Frequency')
+    plt.title('Histogram of Sum of PPM Errors for Inversion and Optimization Methods')
+    plt.legend()
+    plt.xlim([ xlim[0],xlim[1]]) 
+    plt.show()
+    # box plot
+    plt.boxplot([inv, opt], labels=['Inversion', 'Optimization'], 
+                patch_artist=True, 
+                boxprops=dict(facecolor='cyan', color='blue'), 
+                medianprops=dict(color='red'), 
+                whiskerprops=dict(color='green'), 
+                capprops=dict(color='magenta'), 
+                flierprops=dict(color='yellow', markeredgecolor='black'))
+    plt.ylabel('Sum of PPM Errors')
+    plt.ylim(ylim[0], ylim[1]) 
+    plt.title('Box Plot of Sum of PPM Errors for Inversion and Optimization Methods')
+    plt.show()
+
+    # statistical properties
+    average_inversion = np.mean(inv)
+    average_optimization = np.mean(opt)
+    std_dev_inversion = np.std(inv)
+    std_dev_optimization = np.std(opt)
+    avg_difference = np.sum(np.array(inv) - np.array(opt)) / len(inv)
+    std_dev_difference = np.std(np.array(inv) - np.array(opt))
+    # print statistical properties
+    print(f"Average of PPM Inversion Errors: {average_inversion}")
+    print(f"Average of PPM Optimization Errors: {average_optimization}")
+    print(f"Standard Deviation of PPM Errors : Inversion Method: {std_dev_inversion}")
+    print(f"Standard Deviation of PPM Errors : Optimization Method: {std_dev_optimization}")
+    print(f"Average Difference between Optimization and Inversion PPM Errors: {avg_difference}")
+    
