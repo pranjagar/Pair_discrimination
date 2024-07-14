@@ -120,10 +120,6 @@ def fid(params1 = [0,m.pi/2,0,0,m.pi/4], params2 = [0,m.pi/2,0,0,m.pi/4], coeff_
         states1 = Creating_states(params1)[0]
         states2 = Creating_states(params2)[0]
 
-        # Calculate the fidelities between the corresponding states
-        # fid0 = np.abs(np.dot(states1[0].conj(), states2[0]))**2
-        # fid1 = np.abs(np.dot(states1[1].conj(), states2[1]))**2
-        
         # implementing selection of the bigger fidelity
         fid0 = np.abs(np.vdot(states1[0], states2[0]))**2
         fid1 = np.abs(np.vdot(states1[1], states2[1]))**2
@@ -257,13 +253,9 @@ def Inversion_new( N = 10000, params = [0,m.pi/2, m.pi/4], threshold = 'variable
     
     final_params = [tht1, tht2, phi1, phi2, alpha]  
     
-    Inversion_Fid_manual = [F_a, F_b]
-    Inversion_fid_coeff = fid(c, c_num,  coeff_mode = True)
-    Inversion_Fid_params = fid(params, final_params, coeff_mode = False)
+    fid_inv = fid(params, final_params, coeff_mode = False)
 
-    Fidelities = [Inversion_Fid_manual, Inversion_fid_coeff, Inversion_Fid_params]
-
-    return [Fidelities , params ,final_params, rho, rho_num, prob_vec, nj_vec]
+    return [fid_inv , params ,final_params, rho, rho_num, prob_vec, nj_vec]
 
 # Additional Fucntions 
 
@@ -277,7 +269,7 @@ def generate_collapses(params, N=1000, N_expt=2500):
     nju_big_list = [measure_once(params, N) for _ in range(N_expt)]
     return nju_big_list
 
-def ppm_errors(tru, nju, method = 'CG', ig = 'inv'):
+def ppm_errors_old(tru, nju, method = 'CG', ig = 'inv'):
     inv = Inversion_new(params = tru, N =int(sum(nju)), threshold = 'variable', nju = nju)
     inv_params = inv[2]
 
@@ -312,7 +304,27 @@ def ppm_errors(tru, nju, method = 'CG', ig = 'inv'):
     return [ppm_errors_inv, ppm_errors_opt]
 
 
+
 # functions for plotting
+
+def ppm_errors(tru, nju, method = 'CG', ig = 'inv'):
+    inv = Inversion_new(params = tru, N =int(sum(nju)), threshold = 'variable', nju = nju)
+    inv_params = inv[2]
+
+    if ig == 'inv':
+        sol = minimize(L, inv_params , method = method , args=(nju))
+    else:
+        sol = minimize(L, np.random.rand(5), method = method, args=(nju))
+    sol_params = sol.x
+
+    fid_inv = fid(tru, inv_params)
+    fid_opt = fid(tru, sol.x)
+    
+    ppm_errors_inv = [(1-i)*1e6 for i in fid_inv]
+    ppm_errors_opt = [(1-i)*1e6 for i in fid_opt]
+    
+    x= 7#dummy for breakpoint
+    return [ppm_errors_inv, ppm_errors_opt]
 
 # Defining two functions specifically for the plotting
 def ppm_errors_data(tru, nju_list, ig = 'inv'):  # uses pre-defined function 'ppm errors' on the list of collapse data, creates list of corresponding ppm errors
@@ -321,7 +333,6 @@ def ppm_errors_data(tru, nju_list, ig = 'inv'):  # uses pre-defined function 'pp
     ppm_errors_inversion = [i[0] for i in ppm_sums_list]
     ppm_errors_optimization = [i[1] for i in ppm_sums_list]
     return [ppm_errors_inversion, ppm_errors_optimization]
-
 
 def plot_ppm_errors(error_sum_lists, bins =25, xlim = (None, None), ylim = (None, None)):  # creates histogram and box plot of inversion and optimization ppm errors
     inv = error_sum_lists[0]    # list of ppm errors for inversion and optimization methods
