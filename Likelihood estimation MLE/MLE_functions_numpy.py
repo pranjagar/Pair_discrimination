@@ -349,11 +349,12 @@ def plot_ppm_errors(error_sum_lists, bins =25, xlim = (None, None), ylim = (None
     # box plot
     plt.boxplot([inv, opt], labels=['Inversion', 'Optimization'], 
                 patch_artist=True, 
-                boxprops=dict(facecolor='cyan', color='blue'), 
+                boxprops=dict(facecolor='mintcream', color='blue'), 
                 medianprops=dict(color='red'), 
                 whiskerprops=dict(color='green'), 
                 capprops=dict(color='magenta'), 
                 flierprops=dict(color='yellow', markeredgecolor='black'))
+    
     plt.ylabel('Sum of PPM Errors')
     plt.ylim(ylim[0], ylim[1]) 
     plt.title('Box Plot of Sum of PPM Errors for Inversion and Optimization Methods')
